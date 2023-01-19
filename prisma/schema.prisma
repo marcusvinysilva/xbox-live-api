@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String   @id @default(uuid())
+  Name     String
+  Email    String   @unique
+  Password String
+  CPF      String   @unique
+  isAdmin  Boolean?
+
+  profiles Profile[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("user")
+}
+
+model Profile {
+  id       String @id @default(uuid())
+  Title    String @unique
+  ImageURL String
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId String? @map("user_id")
+
+  homepages Homepage[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("profile")
+}
+
+model Game {
+  id                 String @id @default(uuid())
+  Title              String @unique
+  CoverImageUrl      String @unique
+  Description        String @unique
+  Year               Int
+  ImdbScore          Float
+  TrailerYouTubeUrl  String @unique
+  GameplayYouTubeUrl String @unique
+
+  genres Genre[]
+
+  homepages Homepage[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("game")
+}
+
+model Genre {
+  id   String @id @default(uuid())
+  Name String @unique
+
+  games Game[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("genre")
+}
+
+model Homepage {
+  id String @id @default(uuid())
+
+  game   Game?   @relation(fields: [gameId], references: [id], onDelete: SetNull)
+  gameId String? @map("game_id")
+
+  profile   Profile? @relation(fields: [profileId], references: [id], onDelete: SetNull)
+  profileId String?  @map("profile_id")
+
+  isFavorite Boolean @map("is_favorite")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([profileId, gameId])
+  @@map("homepage")
+}
